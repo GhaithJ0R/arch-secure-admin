@@ -1,0 +1,21 @@
+# =============================
+# 32-dns-leaks.rules
+# DNS Leak Detection and Tampering (64-bit)
+# =============================
+
+# Modifications to resolv.conf
+-a always,exit -F arch=b64 -S open,openat,creat,truncate -F path=/etc/resolv.conf -F perm=w -k dns_tamper
+
+# systemd-resolved config changes
+-a always,exit -F arch=b64 -S open,openat,creat,truncate -F path=/etc/systemd/resolved.conf -F perm=w -k dns_tamper
+
+# Execution of DNS utilities (e.g., dig, nslookup, curl with --resolve)
+-w /usr/bin/dig     -p x -k dns_tools
+-w /usr/bin/nslookup -p x -k dns_tools
+-w /usr/bin/host    -p x -k dns_tools
+-w /usr/bin/curl    -p x -k dns_tools
+-w /usr/bin/wget    -p x -k dns_tools
+
+# DNS-over-HTTPS (DoH) bypass attempt via Firefox or Chrome (DoH configs)
+-w /home/*/.mozilla/firefox/*/prefs.js -p wa -k doh_attempt
+-w /home/*/.config/BraveSoftware/Brave-Browser/*/Preferences -p wa -k doh_attempt
