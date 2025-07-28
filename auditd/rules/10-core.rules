@@ -1,0 +1,51 @@
+# ================================
+# arch-secure-admin :: auditd rules
+# Core syscall-based audit rules (64-bit only)
+# Source: NSA, CIS, MITRE, Linux Foundation
+# ================================
+
+# Reset any existing rules
+-D
+
+# Increase buffer size to reduce dropped events
+-b 8192
+
+# Fail securely if audit system fails (1 = panic)
+-f 1
+
+# Ignore errors for non-existent paths
+-i
+
+##############################
+# EXECUTION MONITORING
+##############################
+-a always,exit -F arch=b64 -S execve -F auid=0 -F euid=0 -k exec_root
+-a always,exit -F arch=b64 -S execve -F auid>=1000 -F auid!=4294967295 -k exec_user
+-a always,exit -F arch=b64 -S execve -F dir=/tmp -k suspicious_exec
+-a always,exit -F arch=b64 -S execve -F dir=/dev/shm -k suspicious_exec
+
+##############################
+# PRIVILEGE ESCALATION
+##############################
+-a always,exit -F arch=b64 -S setuid,setgid,setreuid,setregid,setresuid,setresgid,seteuid,setegid,setfsuid,setfsgid -k priv_esc
+
+##############################
+# TIME / TIMEZONE CHANGES
+##############################
+-a always,exit -F arch=b64 -S adjtimex,settimeofday,clock_settime -k time-change
+
+##############################
+# KERNEL MODULE LOADING
+##############################
+-a always,exit -F arch=b64 -S init_module,finit_module,delete_module -k modules
+
+##############################
+# NETWORK CONFIGURATION CHANGES
+##############################
+-a always,exit -F arch=b64 -S sethostname,setdomainname -k netcfg_change
+
+##############################
+# FAILED ACCESS TO /HOME & /ROOT
+##############################
+-a always,exit -F arch=b64 -S open,openat -F dir=/home -F success=0 -k access_fail
+-a always,exit -F arch=b64 -S open,openat -F dir=/root -F success=0 -k access_fail
