@@ -16,6 +16,12 @@ rule-files:
   - anti-leak.rules
   - local.rules
 
+# Define trusted and external networks
+vars:
+  address-groups:
+    HOME_NET: "[10.66.66.0/24]"   # Replace with your actual wg0 subnet
+    EXTERNAL_NET: "any"
+
 # Monitor both VPN and wireless interfaces
 af-packet:
   - interface: wg0
