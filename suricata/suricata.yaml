@@ -21,6 +21,8 @@ vars:
   address-groups:
     HOME_NET: "[10.66.66.0/24]"   # Replace with your actual wg0 subnet
     EXTERNAL_NET: "any"
+vars:
+  ssh_ports: [22, 2222]  # ⚠️ Change 2222 to your custom SSH port if different
 
 # Monitor both VPN and wireless interfaces
 af-packet:
