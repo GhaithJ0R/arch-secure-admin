@@ -1,0 +1,24 @@
+# ========================================
+# arch-secure-admin :: auditd rules
+# User Shell Environment & Runtime Scripts
+# Target: 64-bit only
+# ========================================
+
+##############################
+# MONITOR SHELL PROFILE FILE MODIFICATIONS
+##############################
+# Rationale: Backdoors and persistence often hide in user shell init files.
+
+-a always,exit -F arch=b64 -S open,openat,creat,truncate -F path=/home/*/.bashrc     -F perm=w -F auid>=1000 -F auid!=4294967295 -k shell_rc
+-a always,exit -F arch=b64 -S open,openat,creat,truncate -F path=/home/*/.bash_profile -F perm=w -F auid>=1000 -F auid!=4294967295 -k shell_rc
+-a always,exit -F arch=b64 -S open,openat,creat,truncate -F path=/home/*/.profile     -F perm=w -F auid>=1000 -F auid!=4294967295 -k shell_rc
+-a always,exit -F arch=b64 -S open,openat,creat,truncate -F path=/home/*/.bash_logout -F perm=w -F auid>=1000 -F auid!=4294967295 -k shell_rc
+
+##############################
+# MONITOR EXECUTION FROM TEMPORARY LOCATIONS
+##############################
+# Rationale: Malware often drops temp files in /tmp, /dev/shm, etc. before execution.
+
+-a always,exit -F arch=b64 -S execve -F dir=/tmp      -F auid>=1000 -F auid!=4294967295 -k tmp_exec
+-a always,exit -F arch=b64 -S execve -F dir=/dev/shm  -F auid>=1000 -F auid!=4294967295 -k tmp_exec
+-a always,exit -F arch=b64 -S execve -F dir=/var/tmp  -F auid>=1000 -F auid!=4294967295 -k tmp_exec
