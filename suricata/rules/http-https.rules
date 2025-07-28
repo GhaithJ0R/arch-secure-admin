@@ -1,0 +1,43 @@
+# ================================
+# Rule File: http-https.rules
+# Purpose : Detect suspicious HTTP/S activity
+# ================================
+
+# Rule 1: Detect direct HTTP (unencrypted) traffic outside VPN
+alert http $HOME_NET any -> !$VPN_NET any (
+    msg:"[LEAK] HTTP request sent in cleartext outside VPN";
+    content:"Host:"; http_header;
+    metadata:service http;
+    sid:330001; rev:1;
+)
+
+# Rule 2: Detect download of executable files (.exe, .sh, .bat, .js, etc.)
+alert http $HOME_NET any -> $EXTERNAL_NET any (
+    msg:"[HTTP] Suspicious file download (exe/sh/bat/js)";
+    file_data;
+    content:".exe"; nocase; 
+    content:".sh"; nocase; 
+    content:".bat"; nocase;
+    content:".js"; nocase;
+    metadata:service http;
+    sid:330002; rev:1;
+)
+
+# Rule 3: Detect large HTTP POST uploads (potential data exfiltration)
+alert http $HOME_NET any -> $EXTERNAL_NET any (
+    msg:"[HTTP] Large POST upload (Possible data exfiltration)";
+    flow:to_server,established;
+    content:"POST"; http_method;
+    content:"Content-Length: "; http_header;
+    pcre:"/Content-Length:\s*[5-9][0-9]{4,}/";  # >50KB
+    metadata:service http;
+    sid:330003; rev:1;
+)
+
+# Rule 4: Detect use of uncommon HTTP user agents (may indicate scripts/tools)
+alert http $HOME_NET any -> $EXTERNAL_NET any (
+    msg:"[HTTP] Unusual User-Agent detected";
+    content:"User-Agent: python"; http_header;
+    metadata:service http;
+    sid:330004; rev:1;
+)
