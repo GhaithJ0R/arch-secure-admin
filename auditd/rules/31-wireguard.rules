@@ -1,0 +1,13 @@
+# =============================
+# 31-wireguard.rules
+# WireGuard Interface Monitoring (64-bit)
+# =============================
+
+# Exec of wg/wg-quick tools
+-w /usr/bin/wg         -p x -k wireguard
+-w /usr/bin/wg-quick   -p x -k wireguard
+-w /usr/bin/nmcli      -p x -k wireguard
+
+# Network routing manipulations (example: route add/del)
+-a always,exit -F arch=b64 -S setrlimit,setpriority,clone,unshare -k wireguard_route
+-a always,exit -F arch=b64 -S open,openat,creat,truncate -F path=/etc/wireguard/wg0.conf -F perm=w -k wireguard_config
