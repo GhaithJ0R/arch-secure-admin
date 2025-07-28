@@ -1,0 +1,28 @@
+# ================================
+# Rule File: 32-dns-leaks.rules
+# Purpose : Detect possible DNS leaks & tampering
+# ================================
+
+# Detect any attempt to edit resolv.conf (common DNS tampering)
+alert filesystem any any -> any any (
+    msg:"[LEAK] /etc/resolv.conf accessed for potential DNS tampering";
+    file_data; content:"nameserver"; nocase;
+    filestore;
+    sid:320001; rev:1;
+)
+
+# Detect outbound plain DNS requests not tunneled through VPN (port 53 UDP)
+alert udp $HOME_NET any -> !$VPN_NET 53 (
+    msg:"[LEAK] Outbound DNS request not tunneled through VPN";
+    metadata:service dns;
+    sid:320002; rev:1;
+)
+
+# Detect DNS over HTTPS (DoH) via HTTP GET to /dns-query (e.g. Firefox, curl)
+alert http $HOME_NET any -> $EXTERNAL_NET any (
+    msg:"[LEAK] Potential DoH (DNS over HTTPS) Request Detected";
+    content:"/dns-query"; http_uri;
+    metadata:service http;
+    sid:320003; rev:2;
+    threshold: type limit, track by_src, count 3, seconds 60;
+)
