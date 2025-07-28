@@ -1,0 +1,37 @@
+# ================================
+# Rule File: ssh-monitor.rules
+# Purpose : Monitor SSH behavior and detect anomalies
+# ================================
+
+# Rule 1: Detect inbound SSH connection attempts
+alert tcp any any -> $HOME_NET 22 (
+    msg:"[SSH] Inbound SSH connection attempt";
+    flow:to_server,established;
+    metadata:service ssh;
+    sid:340001; rev:1;
+)
+
+# Rule 2: Detect multiple SSH connections from same IP (brute-force pattern)
+alert tcp $EXTERNAL_NET any -> $HOME_NET 22 (
+    msg:"[SSH] Possible brute-force attempt on SSH";
+    flow:to_server;
+    threshold:type both, track by_src, count 5, seconds 60;
+    metadata:service ssh;
+    sid:340002; rev:1;
+)
+
+# Rule 3: Detect outbound SSH connection (exfiltration, reverse shell, admin misuse)
+alert tcp $HOME_NET any -> $EXTERNAL_NET 22 (
+    msg:"[SSH] Outbound SSH connection detected";
+    flow:to_server,established;
+    metadata:service ssh;
+    sid:340003; rev:1;
+)
+
+# Rule 4: Detect connections to non-standard SSH ports
+alert tcp any any -> $HOME_NET [2222,222,2022] (
+    msg:"[SSH] Suspicious SSH on non-standard port";
+    flow:to_server,established;
+    metadata:service ssh;
+    sid:340004; rev:1;
+)
