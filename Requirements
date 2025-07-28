@@ -1,0 +1,5 @@
+Arch Linux (x86_64 only)
+
+Kernel with SELinux and WireGuard support
+
+auditd, suricata, iptables, firewalld, firejail, usbguard
