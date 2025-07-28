@@ -1,0 +1,86 @@
+# ========================
+# Suricata Configuration File
+# Project: arch-secure-admin
+# ========================
+
+# Define rule sources
+default-rule-path: /etc/suricata/rules
+
+rule-files:
+  - emerging-malware.rules
+  - emerging-dns.rules
+  - emerging-web_client.rules
+  - ssh-monitor.rules
+  - http-https.rules
+  - dns-leak.rules
+  - anti-leak.rules
+  - local.rules
+
+# Monitor both VPN and wireless interfaces
+af-packet:
+  - interface: wg0
+    cluster-id: 99
+    cluster-type: cluster_flow
+    defrag: yes
+
+  - interface: wlo1
+    cluster-id: 100
+    cluster-type: cluster_flow
+    defrag: yes
+
+# Event logs for alerting and post-incident analysis
+outputs:
+  - eve-log:
+      enabled: yes
+      filetype: regular
+      filename: /var/log/suricata/eve.json
+      types:
+        - alert:
+            metadata: yes
+            http: yes
+            tls: yes
+        - dns
+        - tls
+        - http
+        - ssh
+        - anomaly
+
+  - fast:
+      enabled: yes
+      filename: /var/log/suricata/fast.log
+
+# Performance tuning (recommended for workstations)
+detect-engine:
+  - profile: medium
+    custom-values:
+      toclient-groups: 3
+      toserver-groups: 25
+    sgh-mpm-context: auto
+    inspection-recursion-limit: 3000
+
+# Use available CPU threads wisely
+detect-thread-ratio: 0.75
+
+# TCP stream reassembly and memory limits
+stream:
+  memcap: 64mb
+  checksum-validation: yes
+  inline: no
+  reassembly:
+    memcap: 256mb
+    depth: 1mb
+    toserver-chunk-size: 2560
+    toclient-chunk-size: 2560
+
+# IP defragmentation settings
+defrag:
+  memcap: 32mb
+  trackers: 65535
+  max-frags: 65535
+
+# Flow tracking configuration
+flow:
+  memcap: 128mb
+  hash-size: 32768
+  prealloc: 10000
+  emergency-recovery: 30
