@@ -1,0 +1,20 @@
+# =============================
+# 30-network.rules
+# Network Configuration and Tool Execution (64-bit)
+# =============================
+
+# Hostname & Domain Changes
+-a always,exit -F arch=b64 -S sethostname,setdomainname -k netcfg_change
+
+# Resolver & Hostname Files
+-a always,exit -F arch=b64 -S open,openat,creat,truncate -F path=/etc/hostname     -F perm=w -k netcfg_change
+-a always,exit -F arch=b64 -S open,openat,creat,truncate -F path=/etc/hosts        -F perm=w -k netcfg_change
+-a always,exit -F arch=b64 -S open,openat,creat,truncate -F path=/etc/resolv.conf  -F perm=w -k netcfg_change
+
+# Network Tools Execution
+-w /usr/bin/ip        -p x -k netcfg_tool
+-w /usr/sbin/ip       -p x -k netcfg_tool
+-w /usr/bin/ifconfig  -p x -k netcfg_tool
+-w /sbin/iptables     -p x -k netcfg_tool
+-w /usr/bin/iptables  -p x -k netcfg_tool
+-w /usr/sbin/iptables -p x -k netcfg_tool
